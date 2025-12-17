@@ -324,7 +324,7 @@ def authenticate_user(username: str, password: str) -> dict:
 # - search_detergents(): simple name/ID search
 # - get_detergent_total_value(): compute total value
 # ==================================================
-def add_detergent(name: str, price: float, qty: int, image_filename: str = None, user_id: int = None) -> bool:
+def add_detergent(name: str, price: float, qty: int, image_filename: str = None, user_id: int = None, filter_cloth_type: str = None, filter_color: str = None, filter_special: str = None) -> bool:
     """Add a detergent to inventory with auto-increment DETERGENT_ID."""
     _require_db()
     transaction = db.transaction()
@@ -338,13 +338,16 @@ def add_detergent(name: str, price: float, qty: int, image_filename: str = None,
         'DATE_CREATED': now,
         'DATE_UPDATED': now,
         'IMAGE_FILENAME': image_filename,
+        'FILTER_CLOTH_TYPE': filter_cloth_type,
+        'FILTER_COLOR': filter_color,
+        'FILTER_SPECIAL': filter_special,
     })
     # Log the action
     if user_id is not None:
         add_inventory_log(user_id, 'Add', 'Detergent', det_id, name, qty, price)
     return True
 
-def update_detergent(detergent_id: int, name: str, price: float, qty: int, image_filename: str = None, user_id: int = None) -> bool:
+def update_detergent(detergent_id: int, name: str, price: float, qty: int, image_filename: str = None, user_id: int = None, filter_cloth_type: str = None, filter_color: str = None, filter_special: str = None) -> bool:
     """Update a detergent by DETERGENT_ID."""
     _require_db()
     docs = db.collection('DETERGENT').where('DETERGENT_ID', '==', detergent_id).limit(1).get()
@@ -356,6 +359,9 @@ def update_detergent(detergent_id: int, name: str, price: float, qty: int, image
         'QTY': int(qty),
         'DATE_UPDATED': _now(),
         'IMAGE_FILENAME': image_filename,
+        'FILTER_CLOTH_TYPE': filter_cloth_type,
+        'FILTER_COLOR': filter_color,
+        'FILTER_SPECIAL': filter_special,
     })
     # Log the action
     if user_id is not None:
@@ -420,7 +426,7 @@ def get_detergent_total_value() -> dict:
 # - search_fabric_conditioners(): simple name/ID search
 # - get_fabcon_total_value(): compute total value
 # ==================================================
-def add_fabric_conditioner(name: str, price: float, qty: int, image_filename: str = None, user_id: int = None) -> bool:
+def add_fabric_conditioner(name: str, price: float, qty: int, image_filename: str = None, user_id: int = None, filter_cloth_type: str = None, filter_color: str = None, filter_special: str = None) -> bool:
     """Add a fabric conditioner to inventory with auto-increment FABCON_ID."""
     _require_db()
     transaction = db.transaction()
@@ -434,13 +440,16 @@ def add_fabric_conditioner(name: str, price: float, qty: int, image_filename: st
         'DATE_CREATED': now,
         'DATE_UPDATED': now,
         'IMAGE_FILENAME': image_filename,
+        'FILTER_CLOTH_TYPE': filter_cloth_type,
+        'FILTER_COLOR': filter_color,
+        'FILTER_SPECIAL': filter_special,
     })
     # Log the action
     if user_id is not None:
         add_inventory_log(user_id, 'Add', 'Fabric Conditioner', fab_id, name, qty, price)
     return True
 
-def update_fabric_conditioner(fabric_conditioner_id: int, name: str, price: float, qty: int, image_filename: str = None, user_id: int = None) -> bool:
+def update_fabric_conditioner(fabric_conditioner_id: int, name: str, price: float, qty: int, image_filename: str = None, user_id: int = None, filter_cloth_type: str = None, filter_color: str = None, filter_special: str = None) -> bool:
     """Update a fabric conditioner by FABCON_ID."""
     _require_db()
     docs = db.collection('FABCON').where('FABCON_ID', '==', fabric_conditioner_id).limit(1).get()
@@ -452,6 +461,9 @@ def update_fabric_conditioner(fabric_conditioner_id: int, name: str, price: floa
         'QTY': int(qty),
         'DATE_UPDATED': _now(),
         'IMAGE_FILENAME': image_filename,
+        'FILTER_CLOTH_TYPE': filter_cloth_type,
+        'FILTER_COLOR': filter_color,
+        'FILTER_SPECIAL': filter_special,
     })
     # Log the action
     if user_id is not None:
