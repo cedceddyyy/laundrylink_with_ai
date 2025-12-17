@@ -1624,9 +1624,10 @@ def admin_order_report():
     page = request.args.get('page', 1, type=int)
     items_per_page = 10
     
-    # Default to today if no dates provided
+    # Default to today if no dates provided AND no search query is active
+    # If searching, we want to look at ALL records by default
     today = datetime.now().strftime('%Y-%m-%d')
-    if not start_date and not end_date:
+    if not start_date and not end_date and not search_query:
         start_date = today
         end_date = today
     
