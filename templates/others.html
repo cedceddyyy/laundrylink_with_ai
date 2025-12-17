@@ -1,238 +1,663 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="google" content="notranslate">
-        <link href="https://fonts.googleapis.com/css?family=Poppins&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css?family=Inter&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css?family=Baloo&display=swap" rel="stylesheet" />
-        <link rel="icon" type="image/x-icon" href="../static/images/favicon.png">
-        <link href="{{ url_for('static', filename='css/others.css') }}" rel="stylesheet" />
-        <title>Laundrylink - Others</title>
-    </head>
-    <body>
-        <div class="v100_93">
-            <div class="v100_94"></div>
-            <div class="v100_133" onclick="openDetergentModal()"></div>
-            <div class="v100_140" onclick="document.getElementById('ownDetergentBtn').click()"></div>
-            <div class="v100_138" onclick="openFabconModal()"></div>
-            <div class="v100_151" onclick="document.getElementById('ownFabconBtn').click()"></div>
-            <span class="v100_95" data-translate="options_title">OPTIONS</span>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <link href="https://fonts.googleapis.com/css?family=Poppins&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Inter&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Baloo&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="../static/images/favicon.png">
+    <link href="{{ url_for('static', filename='css/others.css') }}" rel="stylesheet" />
+    <title>Laundrylink - Others</title>
+</head>
+
+<body>
+    <div class="v100_93">
+        <div class="v100_94"></div>
+        <div class="v100_133" onclick="openDetergentModal()"></div>
+        <div class="v100_140" onclick="document.getElementById('ownDetergentBtn').click()"></div>
+        <div class="v100_138" onclick="openFabconModal()"></div>
+        <div class="v100_151" onclick="document.getElementById('ownFabconBtn').click()"></div>
+        <span class="v100_95" data-translate="options_title">OPTIONS</span>
+        {% if order_type != 'Self-service' %}
+        <span class="v100_161" data-translate="step_other">OTHER</span>
+        {% endif %}
+        <form id="othersForm" action="{{ url_for('submit_others') }}" method="post">
+            <input type="hidden" name="pickup_date" id="hiddenPickupDate" />
+            <input type="hidden" name="pickup_time" id="hiddenPickupTime" />
+            <input type="hidden" name="order_note" id="hiddenOrderNote" />
+
+            <div class="button-container">
+                <div class="v100_98">
+                    <a href="{{ url_for('weight_laundry') }}" class="v100_99" data-translate="previous_btn">Previous</a>
+                </div>
+                <div class="v100_96">
+                    <button class="v100_97" type="submit" data-translate="next_btn">Next</button>
+                </div>
+            </div>
+            <div class="v100_100">
+                <div class="v100_101"></div>
+                <div class="v100_102"></div>
+                <div class="v100_103"></div>
+                <div class="v100_104"></div>
+                <div class="v100_105"></div>
+                <div class="v100_106"></div>
+                <div class="v100_107"></div>
+                <div class="v100_108"></div>
+                <div class="v100_109"></div>
+                <span class="v100_110">3</span>
+            </div>
+            <span class="v100_111" data-translate="step_you">YOU</span>
+
+            <!-- Trigger Button -->
+            <button class="v100_145" type="button" onclick="openDetergentModal()"
+                data-translate="detergent_btn">DETERGENT</button>
+            <button class="ai-suggest-btn" type="button" onclick="openAiModal()">✨ AI SUGGEST</button>
+
+
+            <!-- Modal -->
+            <div id="detergentModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeDetergentModal()">&times;</span>
+                    <h2 data-translate="select_detergent_title">SELECT DETERGENT</h2>
+                    {% for detergent in detergents %}
+                    <div class="detergent-option" data-id="{{ detergent.DETERGENT_ID }}"
+                        data-type="{{ detergent.FILTER_CLOTH_TYPE|default('') }}"
+                        data-color="{{ detergent.FILTER_COLOR|default('') }}"
+                        data-special="{{ detergent.FILTER_SPECIAL|default('') }}">
+                        <input type="checkbox" id="detergent_{{ detergent.DETERGENT_ID }}" name="detergent_ids"
+                            value="{{ detergent.DETERGENT_ID }}" class="detergent-checkbox" />
+                        <label for="detergent_{{ detergent.DETERGENT_ID }}">
+                            <img src="{{ url_for('static', filename='uploads/' ~ (detergent.IMAGE_FILENAME or 'default_detergent.jpg')) }}"
+                                alt="{{ detergent.DETERGENT_NAME }}">
+                            <div class="details">
+                                <strong>{{ detergent.DETERGENT_NAME }}</strong>
+                                <span>Php {{ '%.2f'|format(detergent.DETERGENT_PRICE) }}</span>
+                            </div>
+                            <div class="quantity">
+                                <button type="button"
+                                    onclick="changeQty('detergent_qty_{{ detergent.DETERGENT_ID }}', -1)">-</button>
+                                <input type="number" min="1" value="1" name="detergent_qty_{{ detergent.DETERGENT_ID }}"
+                                    id="detergent_qty_{{ detergent.DETERGENT_ID }}"
+                                    data-available="{{ detergent.QTY|default(0) }}"
+                                    data-name="{{ detergent.DETERGENT_NAME }}" />
+                                <button type="button"
+                                    onclick="changeQty('detergent_qty_{{ detergent.DETERGENT_ID }}', 1)">+</button>
+                            </div>
+                            <input type="hidden" name="detergent_price_{{ detergent.DETERGENT_ID }}"
+                                value="{{ detergent.DETERGENT_PRICE }}" />
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                    <!--weight suggestion message-->
+                    <div class="suggestion-message" id="detergentSuggestion"></div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="submit" onclick="closeDetergentModal()"
+                            data-translate="done_btn">Done</button>
+                        <button type="button" class="cancel" onclick="closeDetergentModal()"
+                            data-translate="cancel_btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div class="v100_157"></div>
+            <div class="v100_158"></div>
+            <div class="v100_159"></div>
+            <button class="v100_149" type="button" id="ownDetergentBtn" data-translate="own_detergent_btn">OWN
+                DETERGENT</button>
+            <input type="hidden" name="own_detergent" id="ownDetergentInput" value="0" />
+            <button class="v100_154" type="button" id="ownFabconBtn" data-translate="own_fabcon_btn">OWN FABCON</button>
+            <input type="hidden" name="own_fabcon" id="ownFabconInput" value="0" />
+            <div class="v100_160"></div>
+            <button class="v100_147" type="button" onclick="openFabconModal()"
+                data-translate="fabcon_btn">FABCON</button>
+
+            <!-- FABCON Modal -->
+            <div id="fabconModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeFabconModal()">&times;</span>
+                    <h2 data-translate="select_fabcon_title">SELECT FABCON</h2>
+                    {% for fabcon in fabric_conditioners %}
+                    <div class="detergent-option" data-id="{{ fabcon.FABCON_ID }}"
+                        data-type="{{ fabcon.FILTER_CLOTH_TYPE|default('') }}"
+                        data-color="{{ fabcon.FILTER_COLOR|default('') }}"
+                        data-special="{{ fabcon.FILTER_SPECIAL|default('') }}">
+                        <input type="checkbox" id="fabcon_{{ fabcon.FABCON_ID }}" name="fabcon_ids"
+                            value="{{ fabcon.FABCON_ID }}" class="fabcon-checkbox" />
+                        <label for="fabcon_{{ fabcon.FABCON_ID }}">
+                            <img src="{{ url_for('static', filename='uploads/' ~ (fabcon.IMAGE_FILENAME or 'default_fabcon.jpg')) }}"
+                                alt="{{ fabcon.FABCON_NAME }}">
+                            <div class="details">
+                                <strong>{{ fabcon.FABCON_NAME }}</strong>
+                                <span>Php {{ '%.2f'|format(fabcon.FABCON_PRICE) }}</span>
+                            </div>
+                            <div class="quantity">
+                                <button type="button"
+                                    onclick="changeQty('fabcon_qty_{{ fabcon.FABCON_ID }}', -1)">-</button>
+                                <input type="number" min="1" value="1" name="fabcon_qty_{{ fabcon.FABCON_ID }}"
+                                    id="fabcon_qty_{{ fabcon.FABCON_ID }}" data-available="{{ fabcon.QTY|default(0) }}"
+                                    data-name="{{ fabcon.FABCON_NAME }}" />
+                                <button type="button"
+                                    onclick="changeQty('fabcon_qty_{{ fabcon.FABCON_ID }}', 1)">+</button>
+                            </div>
+                            <input type="hidden" name="fabcon_price_{{ fabcon.FABCON_ID }}"
+                                value="{{ fabcon.FABCON_PRICE }}" />
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                    <!--weight suggestion message-->
+                    <div class="suggestion-message" id="fabconSuggestion"></div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="submit" onclick="closeFabconModal()"
+                            data-translate="done_btn">Done</button>
+                        <button type="button" class="cancel" onclick="closeFabconModal()"
+                            data-translate="cancel_btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <span class="v100_112" data-translate="step_weigh">WEIGH</span>
             {% if order_type != 'Self-service' %}
-            <span class="v100_161" data-translate="step_other">OTHER</span>
+            <span class="v100_113" data-translate="step_other">OTHER</span>
             {% endif %}
-            <form id="othersForm" action="{{ url_for('submit_others') }}" method="post">
-                <input type="hidden" name="pickup_date" id="hiddenPickupDate" />
-                <input type="hidden" name="pickup_time" id="hiddenPickupTime" />
-                <input type="hidden" name="order_note" id="hiddenOrderNote" />
-                                
-                <div class="button-container">
-                    <div class="v100_98">
-                        <a href="{{ url_for('weight_laundry') }}" class="v100_99" data-translate="previous_btn">Previous</a>
-                    </div>
-                    <div class="v100_96">
-                        <button class="v100_97" type="submit" data-translate="next_btn">Next</button>
-                    </div>
-                </div>
-                <div class="v100_100">
-                    <div class="v100_101"></div>
-                    <div class="v100_102"></div>
-                    <div class="v100_103"></div>
-                    <div class="v100_104"></div>
-                    <div class="v100_105"></div>
-                    <div class="v100_106"></div>
-                    <div class="v100_107"></div>
-                    <div class="v100_108"></div>
-                    <div class="v100_109"></div>
-                    <span class="v100_110">3</span>
-                </div>
-                <span class="v100_111" data-translate="step_you">YOU</span>
-                
-                <!-- Trigger Button -->
-                <button class="v100_145" type="button" onclick="openDetergentModal()" data-translate="detergent_btn">DETERGENT</button>
+            <span class="v100_114" data-translate="step_payment">PAYMENT</span>
+            <div class="v91_256"></div>
+            {% if order_type != 'Self-service' %}
+            <div class="v100_163"></div>
+            <div class="v100_165"></div>
+            <span class="v100_267">Php 70.00</span>
+            <div class="v100_177"></div>
+            <button class="v100_167" type="button" id="ironBtn" data-translate="iron_btn">IRON</button>
+            <input type="hidden" name="iron" id="ironInput" value="0" />
+            <span class="v100_265">Php 50.00</span>
+            <button class="v100_173" type="button" id="foldBtn" data-translate="fold_btn">FOLD</button>
+            <input type="hidden" name="fold" id="foldInput" value="0" />
+            <div class="v100_176"></div>
+            <div class="v244_284"></div>
+            <button class="v244_288" type="button" id="priorityBtn" data-translate="priority_btn">PRIORITY
+                ORDER</button>
+            <input type="hidden" name="priority" id="priorityInput" value="0" />
+            <span class="v244_289">Php 50.00</span>
+            <div class="v245_301"></div>
+            <div class="v245_297"></div>
+            <div class="v245_304"></div>
 
-                <!-- Modal -->
-                <div id="detergentModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closeDetergentModal()">&times;</span>
-                        <h2 data-translate="select_detergent_title">SELECT DETERGENT</h2>
-                        {% for detergent in detergents %}
-                        <div class="detergent-option">
-                            <input type="checkbox" id="detergent_{{ detergent.DETERGENT_ID }}" name="detergent_ids" value="{{ detergent.DETERGENT_ID }}" class="detergent-checkbox" />
-                            <label for="detergent_{{ detergent.DETERGENT_ID }}">
-                                <img src="{{ url_for('static', filename='uploads/' ~ (detergent.IMAGE_FILENAME or 'default_detergent.jpg')) }}" alt="{{ detergent.DETERGENT_NAME }}">
-                                <div class="details">
-                                    <strong>{{ detergent.DETERGENT_NAME }}</strong>
-                                    <span>Php {{ '%.2f'|format(detergent.DETERGENT_PRICE) }}</span>
-                                </div>
-                                <div class="quantity">
-                                    <button type="button" onclick="changeQty('detergent_qty_{{ detergent.DETERGENT_ID }}', -1)">-</button>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value="1"
-                                        name="detergent_qty_{{ detergent.DETERGENT_ID }}"
-                                        id="detergent_qty_{{ detergent.DETERGENT_ID }}"
-                                        data-available="{{ detergent.QTY|default(0) }}"
-                                        data-name="{{ detergent.DETERGENT_NAME }}"
-                                    />
-                                    <button type="button" onclick="changeQty('detergent_qty_{{ detergent.DETERGENT_ID }}', 1)">+</button>
-                                </div>
-                                <input type="hidden" name="detergent_price_{{ detergent.DETERGENT_ID }}" value="{{ detergent.DETERGENT_PRICE }}" />
-                            </label>
-                        </div>
-                        {% endfor %}
-
-                        <!--weight suggestion message-->
-                        <div class="suggestion-message" id="detergentSuggestion"></div>
-
-                        <div class="modal-buttons">
-                            <button type="button" class="submit" onclick="closeDetergentModal()" data-translate="done_btn">Done</button>
-                            <button type="button" class="cancel" onclick="closeDetergentModal()" data-translate="cancel_btn">Cancel</button>
+            <!-- SCHEDULE PICKUP -->
+            <button class="v245_298" type="button"
+                onclick="document.getElementById('scheduleModal').style.display='block'"
+                data-translate="schedule_pickup_btn">SCHEDULE PICKUP</button>
+            {% endif %}
+            <!-- Price totals - visible for both Self-service and Drop-off -->
+            <span class="v100_269" id="detergentTotal" data-translate="price_prefix">Price: 0.00</span>
+            <span class="v100_273" id="fabconTotal" data-translate="price_prefix">Price: 0.00</span>
+            {% if order_type != 'Self-service' %}
+            <div id="scheduleModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeScheduleModal()">&times;</span>
+                    <h2 data-translate="schedule_pickup_title">Schedule Pickup</h2>
+                    <p class="note" data-translate="schedule_note">*No Pickups on Tuesdays/Holidays – Please select
+                        another day.</p>
+                    <div class="form-group">
+                        <label for="pickup-date" data-translate="date_label">Date</label>
+                        <div class="input-icon">
+                            <input type="date" id="pickup-date" name="pickup-date" onchange="validatePickupDate()" />
                         </div>
                     </div>
-                </div>
-                <div class="v100_157"></div>
-                <div class="v100_158"></div>
-                <div class="v100_159"></div>
-                <button class="v100_149" type="button" id="ownDetergentBtn" data-translate="own_detergent_btn">OWN DETERGENT</button>
-                <input type="hidden" name="own_detergent" id="ownDetergentInput" value="0" />
-                <button class="v100_154" type="button" id="ownFabconBtn" data-translate="own_fabcon_btn">OWN FABCON</button>
-                <input type="hidden" name="own_fabcon" id="ownFabconInput" value="0" />
-                <div class="v100_160"></div>
-                <button class="v100_147" type="button" onclick="openFabconModal()" data-translate="fabcon_btn">FABCON</button>
-
-                <!-- FABCON Modal -->
-                <div id="fabconModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closeFabconModal()">&times;</span>
-                        <h2 data-translate="select_fabcon_title">SELECT FABCON</h2>
-                        {% for fabcon in fabric_conditioners %}
-                        <div class="detergent-option">
-                            <input type="checkbox" id="fabcon_{{ fabcon.FABCON_ID }}" name="fabcon_ids" value="{{ fabcon.FABCON_ID }}" class="fabcon-checkbox" />
-                            <label for="fabcon_{{ fabcon.FABCON_ID }}">
-                                <img src="{{ url_for('static', filename='uploads/' ~ (fabcon.IMAGE_FILENAME or 'default_fabcon.jpg')) }}" alt="{{ fabcon.FABCON_NAME }}">
-                                <div class="details">
-                                    <strong>{{ fabcon.FABCON_NAME }}</strong>
-                                    <span>Php {{ '%.2f'|format(fabcon.FABCON_PRICE) }}</span>
-                                </div>
-                                <div class="quantity">
-                                    <button type="button" onclick="changeQty('fabcon_qty_{{ fabcon.FABCON_ID }}', -1)">-</button>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value="1"
-                                        name="fabcon_qty_{{ fabcon.FABCON_ID }}"
-                                        id="fabcon_qty_{{ fabcon.FABCON_ID }}"
-                                        data-available="{{ fabcon.QTY|default(0) }}"
-                                        data-name="{{ fabcon.FABCON_NAME }}"
-                                    />
-                                    <button type="button" onclick="changeQty('fabcon_qty_{{ fabcon.FABCON_ID }}', 1)">+</button>
-                                </div>
-                                <input type="hidden" name="fabcon_price_{{ fabcon.FABCON_ID }}" value="{{ fabcon.FABCON_PRICE }}" />
-                            </label>
-                        </div>
-                        {% endfor %}
-
-                        <!--weight suggestion message-->
-                        <div class="suggestion-message" id="fabconSuggestion"></div>
-
-                        <div class="modal-buttons">
-                            <button type="button" class="submit" onclick="closeFabconModal()" data-translate="done_btn">Done</button>
-                            <button type="button" class="cancel" onclick="closeFabconModal()" data-translate="cancel_btn">Cancel</button>
+                    <div class="form-group">
+                        <label for="pickup-time" data-translate="time_label">Time (6:00 AM - 6:00 PM)</label>
+                        <div class="input-icon">
+                            <input type="time" id="pickup-time" name="pickup-time" min="06:00" max="18:00"
+                                onchange="validatePickupTime()" />
                         </div>
                     </div>
+                    <div class="modal-buttons">
+                        <button type="button" class="submit" onclick="saveSchedule()"
+                            data-translate="submit_btn">Submit</button>
+                        <button type="button" class="cancel" onclick="closeScheduleModal()"
+                            data-translate="cancel_btn">Cancel</button>
+                    </div>
                 </div>
-                <span class="v100_112" data-translate="step_weigh">WEIGH</span>
-                {% if order_type != 'Self-service' %}
-                <span class="v100_113" data-translate="step_other">OTHER</span>
-                {% endif %}
-                <span class="v100_114" data-translate="step_payment">PAYMENT</span>
-                <div class="v91_256"></div>
-                {% if order_type != 'Self-service' %}
-                <div class="v100_163"></div>
-                <div class="v100_165"></div>
-                <span class="v100_267">Php 70.00</span>
-                <div class="v100_177"></div>
-                <button class="v100_167" type="button" id="ironBtn" data-translate="iron_btn">IRON</button>
-                <input type="hidden" name="iron" id="ironInput" value="0" />
-                <span class="v100_265">Php 50.00</span>
-                <button class="v100_173" type="button" id="foldBtn" data-translate="fold_btn">FOLD</button>
-                <input type="hidden" name="fold" id="foldInput" value="0" />
-                <div class="v100_176"></div>
-                <div class="v244_284"></div>
-                <button class="v244_288" type="button" id="priorityBtn" data-translate="priority_btn">PRIORITY ORDER</button>
-                <input type="hidden" name="priority" id="priorityInput" value="0" />
-                <span class="v244_289">Php 50.00</span>
-                <div class="v245_301"></div>
-                <div class="v245_297"></div>
-                <div class="v245_304"></div>
+            </div>
+            {% endif %}
 
-                <!-- SCHEDULE PICKUP -->
-                <button class="v245_298" type="button" onclick="document.getElementById('scheduleModal').style.display='block'" data-translate="schedule_pickup_btn">SCHEDULE PICKUP</button>
-                {% endif %}
-                <!-- Price totals - visible for both Self-service and Drop-off -->
-                <span class="v100_269" id="detergentTotal" data-translate="price_prefix">Price: 0.00</span>
-                <span class="v100_273" id="fabconTotal" data-translate="price_prefix">Price: 0.00</span>
-                {% if order_type != 'Self-service' %}
-                <div id="scheduleModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closeScheduleModal()">&times;</span>
-                        <h2 data-translate="schedule_pickup_title">Schedule Pickup</h2>
-                        <p class="note" data-translate="schedule_note">*No Pickups on Tuesdays/Holidays – Please select another day.</p>
-                        <div class="form-group">
-                            <label for="pickup-date" data-translate="date_label">Date</label>
-                            <div class="input-icon">
-                                <input type="date" id="pickup-date" name="pickup-date" onchange="validatePickupDate()" />
+            <!-- AI SUGGEST MODAL -->
+            <div id="aiModal" class="modal">
+                <div class="ai-modal-content">
+                    <span class="close-ai-modal" onclick="closeAiModal()">&times;</span>
+
+                    <!-- Step 0: Welcome -->
+                    <div class="ai-step active" id="step0">
+                        <div style="text-align: center; padding: 20px 0;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">✨</div>
+                            <h2 style="color: #122d69; margin-bottom: 15px;">Welcome to AI Suggest!</h2>
+                            <p
+                                style="font-size: 16px; color: #666; line-height: 1.6; max-width: 450px; margin: 0 auto;">
+                                Let our smart AI help you find the perfect detergent and fabric conditioner for your
+                                laundry.
+                                Answer a few quick questions, and we'll recommend the best products for your needs.
+                            </p>
+                            <div style="margin-top: 30px;">
+                                <div class="loading-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <p style="font-size: 14px; color: #999; margin-top: 15px;">Starting in a moment...</p>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="pickup-time" data-translate="time_label">Time (6:00 AM - 6:00 PM)</label>
-                            <div class="input-icon">
-                                <input type="time" id="pickup-time" name="pickup-time" min="06:00" max="18:00" onchange="validatePickupTime()" />
+                    </div>
+
+                    <!-- Step 1: Clothes Type -->
+                    <div class="ai-step active" id="step1">
+                        <h2>What type of clothes?</h2>
+                        <p>Help us choose the right care for your fabrics.</p>
+                        <div class="ai-options">
+                            <div class="ai-option-card" onclick="selectOption('type', 'Delicate', this)">
+                                <span class="ai-icon">👗</span>
+                                <span>Delicate</span><br><small>Silk, Baby Clothes</small>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('type', 'Regular', this)">
+                                <span class="ai-icon">👕</span>
+                                <span>Regular</span><br><small>Everyday Wear</small>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('type', 'Heavy', this)">
+                                <span class="ai-icon">👖</span>
+                                <span>Heavy</span><br><small>Jeans, Towels</small>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('type', 'Mixed', this)">
+                                <span class="ai-icon">🔀</span>
+                                <span>Mixed</span><br><small>Various Types</small>
                             </div>
                         </div>
-                        <div class="modal-buttons">
-                            <button type="button" class="submit" onclick="saveSchedule()" data-translate="submit_btn">Submit</button>
-                            <button type="button" class="cancel" onclick="closeScheduleModal()" data-translate="cancel_btn">Cancel</button>
+                        <div class="ai-nav">
+                            <div></div>
+                            <button type="button" class="ai-btn ai-btn-next" onclick="nextStep(2)">Next</button>
                         </div>
                     </div>
-                </div>
-                {% endif %}
-                
-                <!-- ERROR MODAL -->
-                <div id="errorModal" class="error-modal">
-                    <div class="error-content">
-                        <div class="error-icon"></div>
-                        <div class="error-title"><b>Notification</b></div>
-                        <div class="error-message" id="errorMessage"></div>
-                        <button type="button" class="error-button" onclick="closeErrorModal(); return false;">Got it</button>
-                    </div>
-                </div>
-                
-                {% if order_type != 'Self-service' %}
-                <!-- ADD NOTE (hidden for Self-service) -->
-                <div class="v244_285"></div>
-                <div class="v245_296"></div>
-                <button class="v244_290" type="button" onclick="document.getElementById('noteModal').style.display='block'" data-translate="add_note_btn">ADD NOTE</button>
-                <div id="noteModal" class="modal">
-                    <div class="modal-content note-modal">
-                        <span class="close" onclick="document.getElementById('noteModal').style.display='none'">&times;</span>
-                        <h2 data-translate="note_title">Note</h2>
-                        <div class="note-text-area">
-                            <textarea id="note-text" placeholder="You can write your note here..." data-translate-placeholder="note_placeholder"></textarea>
+
+                    <!-- Step 2: Color -->
+                    <div class="ai-step" id="step2">
+                        <h2>Color Composition</h2>
+                        <div class="ai-options">
+                            <div class="ai-option-card" onclick="selectOption('color', 'White', this)">
+                                <span class="ai-icon">⬜</span>
+                                <span>Mostly White</span>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('color', 'Colored', this)">
+                                <span class="ai-icon">🌈</span>
+                                <span>Mostly Colored</span>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('color', 'Mixed', this)">
+                                <span class="ai-icon">🎨</span>
+                                <span>Mixed</span>
+                            </div>
                         </div>
-                        <div class="modal-buttons">
-                            <button type="button" class="submit" onclick="saveNote()" data-translate="submit_btn">Submit</button>
-                            <button type="button" class="cancel" onclick="document.getElementById('noteModal').style.display='none'" data-translate="cancel_btn">Cancel</button>
+                        <div class="ai-nav">
+                            <button type="button" class="ai-btn ai-btn-prev" onclick="prevStep(1)">Back</button>
+                            <button type="button" class="ai-btn ai-btn-next" onclick="nextStep(3)">Next</button>
                         </div>
                     </div>
+
+                    <!-- Step 3: Special -->
+                    <div class="ai-step" id="step3">
+                        <h2>Special Considerations</h2>
+                        <p style="font-size: 14px; color: #666; margin-top: 5px;">You can select multiple options</p>
+                        <div class="ai-options">
+                            <div class="ai-option-card" onclick="selectOption('special', 'Sensitive Skin', this)">
+                                <span class="ai-icon">👶</span>
+                                <span>Sensitive Skin</span>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('special', 'Strong Odor', this)">
+                                <span class="ai-icon">🏃</span>
+                                <span>Strong Odor</span>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('special', 'Stained', this)">
+                                <span class="ai-icon">☕</span>
+                                <span>Stained</span>
+                            </div>
+                            <div class="ai-option-card" onclick="selectOption('special', 'None', this)">
+                                <span class="ai-icon">✨</span>
+                                <span>None</span>
+                            </div>
+                        </div>
+                        <div class="ai-nav">
+                            <button type="button" class="ai-btn ai-btn-prev" onclick="prevStep(2)">Back</button>
+                            <button type="button" class="ai-btn ai-btn-next" onclick="showResults()">See
+                                Suggestions</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Results -->
+                    <div class="ai-step" id="step4">
+                        <h2>Thinking...</h2>
+                    </div>
                 </div>
-                {% endif %}
-            </form>
-        </div>
+            </div>
+
+            <!-- ERROR MODAL -->
+            <div id="errorModal" class="error-modal">
+                <div class="error-content">
+                    <div class="error-icon"></div>
+                    <div class="error-title"><b>Notification</b></div>
+                    <div class="error-message" id="errorMessage"></div>
+                    <button type="button" class="error-button" onclick="closeErrorModal(); return false;">Got
+                        it</button>
+                </div>
+            </div>
+
+            {% if order_type != 'Self-service' %}
+            <!-- ADD NOTE (hidden for Self-service) -->
+            <div class="v244_285"></div>
+            <div class="v245_296"></div>
+            <button class="v244_290" type="button" onclick="document.getElementById('noteModal').style.display='block'"
+                data-translate="add_note_btn">ADD NOTE</button>
+            <div id="noteModal" class="modal">
+                <div class="modal-content note-modal">
+                    <span class="close"
+                        onclick="document.getElementById('noteModal').style.display='none'">&times;</span>
+                    <h2 data-translate="note_title">Note</h2>
+                    <div class="note-text-area">
+                        <textarea id="note-text" placeholder="You can write your note here..."
+                            data-translate-placeholder="note_placeholder"></textarea>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" class="submit" onclick="saveNote()"
+                            data-translate="submit_btn">Submit</button>
+                        <button type="button" class="cancel"
+                            onclick="document.getElementById('noteModal').style.display='none'"
+                            data-translate="cancel_btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+    </div>
 </body>
+<script>
+    // AI WIZARD LOGIC
+    let aiSelections = { type: '', color: '', special: '' };
+
+    function openAiModal() {
+        document.getElementById('aiModal').style.display = 'block';
+        showStep(0); // Start with welcome screen
+        // Reset selections
+        aiSelections = { type: '', color: '', special: '' };
+        document.querySelectorAll('.ai-option-card').forEach(el => el.classList.remove('selected'));
+
+        // Auto-advance to step 1 after 4 seconds
+        setTimeout(() => {
+            if (document.getElementById('aiModal').style.display === 'block') {
+                showStep(1);
+            }
+        }, 4000);
+    }
+
+    function closeAiModal() {
+        document.getElementById('aiModal').style.display = 'none';
+    }
+
+    function showStep(step) {
+        document.querySelectorAll('.ai-step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+    }
+
+    function nextStep(step) {
+        showStep(step);
+    }
+
+    function prevStep(step) {
+        showStep(step);
+    }
+
+    function selectOption(category, value, element) {
+        if (category === 'special') {
+            // Multi-select for special considerations
+            const currentSelections = aiSelections[category] ? aiSelections[category].split(', ').filter(s => s) : [];
+
+            if (value === 'None') {
+                // If None is clicked, clear all other selections
+                aiSelections[category] = 'None';
+                element.parentElement.querySelectorAll('.ai-option-card').forEach(el => el.classList.remove('selected'));
+                element.classList.add('selected');
+            } else {
+                // If another option is clicked
+                const index = currentSelections.indexOf(value);
+
+                if (index > -1) {
+                    // Deselect if already selected
+                    currentSelections.splice(index, 1);
+                    element.classList.remove('selected');
+                } else {
+                    // Add to selections
+                    currentSelections.push(value);
+                    element.classList.add('selected');
+                }
+
+                // Remove 'None' if it was previously selected
+                const noneIndex = currentSelections.indexOf('None');
+                if (noneIndex > -1) {
+                    currentSelections.splice(noneIndex, 1);
+                    // Also remove visual selection from None option
+                    element.parentElement.querySelectorAll('.ai-option-card').forEach(el => {
+                        if (el.textContent.includes('None')) {
+                            el.classList.remove('selected');
+                        }
+                    });
+                }
+
+                aiSelections[category] = currentSelections.join(', ');
+            }
+        } else {
+            // Single select for type and color
+            aiSelections[category] = value;
+            element.parentElement.querySelectorAll('.ai-option-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+    }
+
+    function showResults() {
+        showStep(4);
+        const content = document.getElementById('step4');
+        content.innerHTML = '<h2>Thinking...</h2>';
+
+        setTimeout(() => {
+            const recs = calculateRecommendations();
+
+            let html = '<h2>✨ Best Match For You</h2>';
+
+            if (recs.detergent) {
+                html += `<div class="rec-card">
+                                <h3>Recommended Detergent</h3>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="/static/uploads/${recs.detergent.image || 'default.jpg'}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
+                                    <div>
+                                        <strong>${recs.detergent.name}</strong><br>
+                                        <small>Match: ${recs.detergent.score} pts</small>
+                                    </div>
+                                </div>
+                             </div>`;
+            } else {
+                html += `<div class="rec-card"><p>No specific detergent match found. Try our best sellers!</p></div>`;
+            }
+
+            if (recs.fabcon) {
+                html += `<div class="rec-card">
+                                <h3>Recommended Fabric Softener</h3>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="/static/uploads/${recs.fabcon.image || 'default.jpg'}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
+                                    <div>
+                                        <strong>${recs.fabcon.name}</strong><br>
+                                        <small>Match: ${recs.fabcon.score} pts</small>
+                                    </div>
+                                </div>
+                             </div>`;
+            }
+
+            html += `<div class="ai-nav" style="justify-content:center; gap:10px;">
+                            <button type="button" class="ai-btn ai-btn-prev" onclick="showStep(3)">Back</button>
+                            <button type="button" class="ai-btn ai-btn-next" onclick="applyAiSelection('${recs.detergent ? recs.detergent.id : ''}', '${recs.fabcon ? recs.fabcon.id : ''}')">Apply Recommendation</button>
+                         </div>`;
+
+            content.innerHTML = html;
+        }, 800);
+    }
+
+    function calculateRecommendations() {
+        // Get all options
+        const detergents = Array.from(document.querySelectorAll('#detergentModal .detergent-option'));
+        const fabcons = Array.from(document.querySelectorAll('#fabconModal .detergent-option'));
+
+        const scoreProduct = (el) => {
+            let score = 0;
+            const type = (el.dataset.type || '').toLowerCase();
+            const color = (el.dataset.color || '').toLowerCase();
+            const special = (el.dataset.special || '').toLowerCase();
+            const name = (el.querySelector('strong').innerText || '').toLowerCase(); // Fallback to name
+
+            // HEURISTICS + TAGS
+            // Type
+            if (aiSelections.type === 'Delicate') {
+                if (type.includes('delicate') || name.includes('liquid') || name.includes('gentle')) score += 5;
+                if (name.includes('powder') || name.includes('strong')) score -= 2;
+            } else if (aiSelections.type === 'Heavy') {
+                if (type.includes('heavy') || name.includes('powder') || name.includes('strong')) score += 5;
+                if (name.includes('delicate')) score -= 2;
+            } else if (aiSelections.type === 'Mixed') {
+                // Mixed means Delicate + Regular + Heavy are all present
+                // Prioritize versatile/safe options (Liquids/Regular) that can clean heavy items but won't ruin delicate ones
+                score += 3;
+                if (name.includes('liquid') || type.includes('regular')) score += 3;
+                if (name.includes('powder')) score -= 1; // Slight penalty for powder on mixed (risk to delicates)
+            } else {
+                score += 1; // Base score for regular
+                if (type.includes('regular')) score += 2;
+            }
+
+            // Color
+            if (aiSelections.color === 'White') {
+                if (color.includes('white') || name.includes('bleach') || name.includes('white')) score += 5;
+            } else if (aiSelections.color === 'Colored') {
+                if (color.includes('colored') || name.includes('color') || name.includes('protect')) score += 5;
+                if (name.includes('bleach')) score -= 10;
+            }
+
+            // Special - Now handles multi-select
+            const specialSelections = aiSelections.special ? aiSelections.special.split(', ').filter(s => s) : [];
+            specialSelections.forEach(selection => {
+                if (selection === 'Sensitive Skin') {
+                    if (special.includes('sensitive') || name.includes('baby') || name.includes('hypo')) score += 10;
+                } else if (selection === 'Strong Odor') {
+                    if (special.includes('odor') || name.includes('antibac') || name.includes('lemon') || name.includes('scent')) score += 5;
+                } else if (selection === 'Stained') {
+                    if (special.includes('stained') || name.includes('stain') || name.includes('power')) score += 5;
+                }
+            });
+
+            return score;
+        };
+
+        const getBest = (list) => {
+            let best = null;
+            let maxScore = -1;
+            list.forEach(el => {
+                const s = scoreProduct(el);
+                if (s > maxScore) {
+                    maxScore = s;
+                    best = {
+                        id: el.dataset.id,
+                        name: el.querySelector('strong').innerText,
+                        image: el.querySelector('img').src.split('/').pop(),
+                        score: s
+                    };
+                }
+            });
+            return best;
+        };
+
+        return {
+            detergent: getBest(detergents),
+            fabcon: getBest(fabcons)
+        };
+    }
+
+    function applyAiSelection(detId, fabId) {
+        try {
+            if (detId) {
+                const detCb = document.getElementById('detergent_' + detId);
+                if (detCb) {
+                    detCb.checked = true;
+                    // Trigger change to update UI
+                    detCb.dispatchEvent(new Event('change'));
+                }
+            }
+            if (fabId) {
+                const fabCb = document.getElementById('fabcon_' + fabId);
+                if (fabCb) {
+                    fabCb.checked = true;
+                    fabCb.dispatchEvent(new Event('change'));
+                }
+            }
+
+            // Calculate Quantity based on Weight - matches suggestion message logic
+            const weight = getLaundryWeight();
+
+            // Calculate detergent quantity
+            let detergentQty = 1;
+            if (weight <= 3) {
+                detergentQty = 1; // Light load
+            } else if (weight <= 8) {
+                detergentQty = 3; // Regular load
+            } else {
+                // Heavy load: 4 + 1 per additional 8kg
+                const extraDetergents = Math.floor((weight - 8) / 8);
+                detergentQty = 4 + extraDetergents;
+            }
+
+            // Calculate fabcon quantity
+            let fabconQty = 2;
+            if (weight <= 8) {
+                fabconQty = 2; // Standard amount for loads ≤8kg
+            } else {
+                // Heavy load: 2 + 1 per additional 4kg
+                const extraFabcons = Math.ceil((weight - 8) / 4);
+                fabconQty = 2 + extraFabcons;
+            }
+
+            // Apply Quantity to Selected Items
+            if (detId) {
+                const detInput = document.getElementById('detergent_qty_' + detId);
+                if (detInput) {
+                    detInput.value = detergentQty;
+                    detInput.dispatchEvent(new Event('change'));
+                }
+            }
+            if (fabId) {
+                const fabInput = document.getElementById('fabcon_qty_' + fabId);
+                if (fabInput) {
+                    fabInput.value = fabconQty;
+                    fabInput.dispatchEvent(new Event('change'));
+                }
+            }
+            // Update totals
+            updateTotals();
+
+            // Show feedback
+            setTimeout(() => {
+                alert('AI recommendation applied successfully! ✨');
+            }, 300);
+
+        } catch (error) {
+            console.error("Error applying AI selection:", error);
+        } finally {
+            // ALWAYS close the modal
+            closeAiModal();
+        }
+    }
+</script>
 <script>
     // Translation dictionary
     const translations = {
@@ -417,7 +842,7 @@
     function applyTranslations() {
         const currentLang = getCurrentLanguage();
         const elements = document.querySelectorAll('[data-translate]');
-        
+
         elements.forEach(element => {
             const key = element.getAttribute('data-translate');
             if (translations[currentLang] && translations[currentLang][key]) {
@@ -469,7 +894,7 @@
             modal.style.display = 'none';
         }
     }
-    
+
     function getAvailable(input) {
         const availableRaw = input ? parseInt(input.getAttribute('data-available')) : NaN;
         return Number.isNaN(availableRaw) ? Infinity : Math.max(0, availableRaw);
@@ -522,17 +947,17 @@
         input.dispatchEvent(new Event('change'));
     }
 
-    
+
     // Error Modal
     function showErrorModal(message) {
         document.getElementById('errorMessage').textContent = message;
         document.getElementById('errorModal').classList.add('show');
     }
-    
+
     function closeErrorModal() {
         document.getElementById('errorModal').classList.remove('show');
     }
-    
+
     const philippineHolidays = [
         // every year nani nga holiday guys
         { month: 0, day: 1 },   // New Year's Day
@@ -546,45 +971,45 @@
         { month: 11, day: 25 }, // Christmas
         { month: 11, day: 30 }, // Rizal Day
     ];
-    
+
     function isHoliday(date) {
         const month = date.getMonth();
         const day = date.getDate();
         return philippineHolidays.some(h => h.month === month && h.day === day);
     }
-    
+
     function isTuesday(date) {
-        return date.getDay() === 2; 
+        return date.getDay() === 2;
     }
-    
-            function validatePickupDate() {
-                const pickupDate = document.getElementById('pickup-date').value;
-                
-                if (pickupDate) {
-                    const selectedDate = new Date(pickupDate + 'T00:00:00');
-                    if (isTuesday(selectedDate)) {
-                        const currentLang = getCurrentLanguage();
-                        showErrorModal(translations[currentLang]['tuesday_unavailable']);
-                        document.getElementById('pickup-date').value = '';
-                        return false;
-                    }
-                    if (isHoliday(selectedDate)) {
-                        const currentLang = getCurrentLanguage();
-                        showErrorModal(translations[currentLang]['holiday_unavailable']);
-                        document.getElementById('pickup-date').value = '';
-                        return false;
-                    }
-                }
-                return true;
-            }    function validatePickupTime() {
+
+    function validatePickupDate() {
+        const pickupDate = document.getElementById('pickup-date').value;
+
+        if (pickupDate) {
+            const selectedDate = new Date(pickupDate + 'T00:00:00');
+            if (isTuesday(selectedDate)) {
+                const currentLang = getCurrentLanguage();
+                showErrorModal(translations[currentLang]['tuesday_unavailable']);
+                document.getElementById('pickup-date').value = '';
+                return false;
+            }
+            if (isHoliday(selectedDate)) {
+                const currentLang = getCurrentLanguage();
+                showErrorModal(translations[currentLang]['holiday_unavailable']);
+                document.getElementById('pickup-date').value = '';
+                return false;
+            }
+        }
+        return true;
+    } function validatePickupTime() {
         const pickupTime = document.getElementById('pickup-time').value;
-        
+
         if (pickupTime) {
             const [hours, minutes] = pickupTime.split(':').map(Number);
             const timeInMinutes = hours * 60 + minutes;
             const minTime = 6 * 60; // 6:00 AM
             const maxTime = 18 * 60; // 6:00 PM
-            
+
             if (timeInMinutes < minTime || timeInMinutes > maxTime) {
                 const currentLang = getCurrentLanguage();
                 showErrorModal(translations[currentLang]['time_invalid']);
@@ -594,12 +1019,12 @@
         }
         return true;
     }
-    
+
     function saveSchedule() {
         const pickupDate = document.getElementById('pickup-date').value;
         const pickupTime = document.getElementById('pickup-time').value;
         const currentLang = getCurrentLanguage();
-        
+
         if (pickupDate) {
             const selectedDate = new Date(pickupDate + 'T00:00:00');
             if (isTuesday(selectedDate)) {
@@ -611,22 +1036,22 @@
                 return;
             }
         }
-        
+
         if (pickupTime) {
             const [hours, minutes] = pickupTime.split(':').map(Number);
             const timeInMinutes = hours * 60 + minutes;
             const minTime = 6 * 60; // 6:00 AM
             const maxTime = 18 * 60; // 6:00 PM
-            
+
             if (timeInMinutes < minTime || timeInMinutes > maxTime) {
                 showErrorModal(translations[currentLang]['time_pickup_invalid']);
                 return;
             }
         }
-        
+
         document.getElementById('hiddenPickupDate').value = pickupDate || '';
         document.getElementById('hiddenPickupTime').value = pickupTime || '';
-        
+
         const scheduleBtn = document.querySelector('button.v245_298');
         if (scheduleBtn) {
             if (pickupDate || pickupTime) {
@@ -637,15 +1062,15 @@
                 toggleBoxHighlight('.v245_297', false);
             }
         }
-        
+
         closeScheduleModal();
     }
-    
+
     function saveNote() {
         const noteText = document.getElementById('note-text').value.trim();
-    
+
         document.getElementById('hiddenOrderNote').value = noteText || '';
-    
+
         const noteBtn = document.querySelector('button.v244_290');
         if (noteText) {
             noteBtn.classList.add('selected');
@@ -654,19 +1079,19 @@
             noteBtn.classList.remove('selected');
             toggleBoxHighlight('.v244_285', false);
         }
-        
+
         document.getElementById('noteModal').style.display = 'none';
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         applyTranslations();
-        
-        document.getElementById('errorModal').addEventListener('click', function(e) {
+
+        document.getElementById('errorModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeErrorModal();
             }
         });
-        
+
         function updateTotals() {
             let detTotal = 0;
             let anyDetSelected = false;
@@ -786,11 +1211,11 @@
                 btn.classList.remove('selected');
             }
         }
-        
+
         // Own Detergent
         const ownDetBtn = document.getElementById('ownDetergentBtn');
         const ownDetInput = document.getElementById('ownDetergentInput');
-        ownDetBtn.addEventListener('click', function() {
+        ownDetBtn.addEventListener('click', function () {
             var isActive = ownDetInput.value === '1';
             ownDetInput.value = isActive ? '0' : '1';
             toggleButtonSelected(ownDetBtn, ownDetInput);
@@ -804,10 +1229,10 @@
         });
         toggleButtonSelected(ownDetBtn, ownDetInput);
         toggleBoxHighlight('.v100_140', ownDetInput.value === '1');
-        
+
         const ownFabBtn = document.getElementById('ownFabconBtn');
         const ownFabInput = document.getElementById('ownFabconInput');
-        ownFabBtn.addEventListener('click', function() {
+        ownFabBtn.addEventListener('click', function () {
             var isActive = ownFabInput.value === '1';
             ownFabInput.value = isActive ? '0' : '1';
             toggleButtonSelected(ownFabBtn, ownFabInput);
@@ -821,9 +1246,9 @@
         });
         toggleButtonSelected(ownFabBtn, ownFabInput);
         toggleBoxHighlight('.v100_151', ownFabInput.value === '1');
-        
+
         document.querySelectorAll('.detergent-checkbox').forEach(cb => {
-            cb.addEventListener('change', function() {
+            cb.addEventListener('change', function () {
                 if (this.checked) {
                     ownDetInput.value = '0';
                     toggleButtonSelected(ownDetBtn, ownDetInput);
@@ -834,15 +1259,15 @@
                     if (this.checked) opt.classList.add('selected');
                     else opt.classList.remove('selected');
                 }
-                
+
                 const anyDetSelected = Array.from(document.querySelectorAll('.detergent-checkbox')).some(cb => cb.checked);
                 toggleBoxHighlight('.v100_133', anyDetSelected);
-                
+
                 updateTotals();
             });
         });
         document.querySelectorAll('.fabcon-checkbox').forEach(cb => {
-            cb.addEventListener('change', function() {
+            cb.addEventListener('change', function () {
                 if (this.checked) {
                     ownFabInput.value = '0';
                     toggleButtonSelected(ownFabBtn, ownFabInput);
@@ -853,22 +1278,22 @@
                     if (this.checked) opt.classList.add('selected');
                     else opt.classList.remove('selected');
                 }
-                
+
                 const anyFabSelected = Array.from(document.querySelectorAll('.fabcon-checkbox')).some(cb => cb.checked);
                 toggleBoxHighlight('.v100_138', anyFabSelected);
-                
+
                 updateTotals();
             });
         });
         document.querySelectorAll('.quantity input[type="number"]').forEach(inp => {
-            inp.addEventListener('change', function() {
+            inp.addEventListener('change', function () {
                 enforceAvailable(inp);
                 updateTotals();
             });
         });
         const othersForm = document.getElementById('othersForm');
         if (othersForm) {
-            othersForm.addEventListener('submit', function(e) {
+            othersForm.addEventListener('submit', function (e) {
                 if (!validateInventorySelection()) {
                     e.preventDefault();
                     return false;
@@ -879,7 +1304,7 @@
         const ironBtn = document.getElementById('ironBtn');
         const ironInput = document.getElementById('ironInput');
         if (ironBtn && ironInput) {
-            ironBtn.addEventListener('click', function() {
+            ironBtn.addEventListener('click', function () {
                 ironInput.value = ironInput.value === '1' ? '0' : '1';
                 toggleButtonSelected(ironBtn, ironInput);
                 toggleBoxHighlight('.v100_163', ironInput.value === '1');
@@ -887,11 +1312,11 @@
             toggleButtonSelected(ironBtn, ironInput);
             toggleBoxHighlight('.v100_163', ironInput.value === '1');
         }
-        
+
         const foldBtn = document.getElementById('foldBtn');
         const foldInput = document.getElementById('foldInput');
         if (foldBtn && foldInput) {
-            foldBtn.addEventListener('click', function() {
+            foldBtn.addEventListener('click', function () {
                 foldInput.value = foldInput.value === '1' ? '0' : '1';
                 toggleButtonSelected(foldBtn, foldInput);
                 toggleBoxHighlight('.v100_165', foldInput.value === '1');
@@ -899,11 +1324,11 @@
             toggleButtonSelected(foldBtn, foldInput);
             toggleBoxHighlight('.v100_165', foldInput.value === '1');
         }
-        
+
         const priorityBtn = document.getElementById('priorityBtn');
         const priorityInput = document.getElementById('priorityInput');
         if (priorityBtn && priorityInput) {
-            priorityBtn.addEventListener('click', function() {
+            priorityBtn.addEventListener('click', function () {
                 priorityInput.value = priorityInput.value === '1' ? '0' : '1';
                 toggleButtonSelected(priorityBtn, priorityInput);
                 toggleBoxHighlight('.v244_284', priorityInput.value === '1');
@@ -917,32 +1342,32 @@
 
     document.addEventListener('DOMContentLoaded', function () {
 
-    function setupValidation(type) {
-        const checkboxes = document.querySelectorAll(`.${type}-checkbox`);
+        function setupValidation(type) {
+            const checkboxes = document.querySelectorAll(`.${type}-checkbox`);
 
-        checkboxes.forEach(cb => {
-            const id = cb.value;
-            const qtyInput = document.getElementById(`${type}_qty_${id}`);
+            checkboxes.forEach(cb => {
+                const id = cb.value;
+                const qtyInput = document.getElementById(`${type}_qty_${id}`);
 
-            // Disable quantity initially
-            qtyInput.disabled = true;
+                // Disable quantity initially
+                qtyInput.disabled = true;
 
-            // Toggle quantity when checkbox changes
-            cb.addEventListener('change', function () {
-                if (this.checked) {
-                    qtyInput.disabled = false;
-                } else {
-                    qtyInput.disabled = true;
-                    qtyInput.value = 1; // reset quantity
-                }
+                // Toggle quantity when checkbox changes
+                cb.addEventListener('change', function () {
+                    if (this.checked) {
+                        qtyInput.disabled = false;
+                    } else {
+                        qtyInput.disabled = true;
+                        qtyInput.value = 1; // reset quantity
+                    }
+                });
             });
-        });
-    }
+        }
 
-    setupValidation('detergent');
-    setupValidation('fabcon');
+        setupValidation('detergent');
+        setupValidation('fabcon');
 
-});
+    });
 
     document.querySelectorAll('.quantity input[type="number"]').forEach(input => {
         input.addEventListener('focus', function () {
@@ -956,4 +1381,5 @@
         });
     });
 </script>
+
 </html>

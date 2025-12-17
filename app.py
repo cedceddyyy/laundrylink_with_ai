@@ -761,7 +761,6 @@ def dashboard():
         order_trend=order_trend
     )
 
-# ADMIN AND STAFF
 @app.route('/detergent_inventory', methods=['GET', 'POST'])
 def detergent_inventory():
     if 'user_id' not in session or session['role'] not in ['admin', 'staff']:
@@ -772,9 +771,21 @@ def detergent_inventory():
         user_id = session.get('user_id')
 
         if action == 'Add' or action == 'Update':
-            name = request.form['name']
-            price = float(request.form['price'])
-            quantity = int(request.form['quantity'])
+            name = request.form.get('name', '').strip()
+            price_str = request.form.get('price', '').strip()
+            qty_str = request.form.get('quantity', '').strip()
+            
+            if not name or not price_str or not qty_str:
+                flash('Please fill in all required fields (Name, Price, Quantity).', 'error')
+                return redirect(url_for('detergent_inventory'))
+
+            try:
+                price = float(price_str)
+                quantity = int(qty_str)
+            except ValueError:
+                flash('Price and Quantity must be valid numbers.', 'error')
+                return redirect(url_for('detergent_inventory'))
+
             image = request.files.get('image')
             filename = None
 
@@ -782,14 +793,25 @@ def detergent_inventory():
                 filename = secure_filename(image.filename)
                 image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+            # AI Filters
+            filter_cloth_type = request.form.get('filter_cloth_type', '')
+            filter_color = request.form.get('filter_color', '')
+            filter_special = request.form.get('filter_special', '')
+
             if action == 'Add':
-                add_detergent(name, price, quantity, filename, user_id=user_id)
+                add_detergent(name, price, quantity, filename, user_id=user_id, 
+                              filter_cloth_type=filter_cloth_type, 
+                              filter_color=filter_color, 
+                              filter_special=filter_special)
             elif action == 'Update':
                 detergent_id = int(request.form['detergent_id'])
                 if not filename:
                     old = get_detergent_by_id(detergent_id)
                     filename = old['IMAGE_FILENAME'] if old else None
-                update_detergent(detergent_id, name, price, quantity, filename, user_id=user_id)
+                update_detergent(detergent_id, name, price, quantity, filename, user_id=user_id,
+                                 filter_cloth_type=filter_cloth_type, 
+                                 filter_color=filter_color, 
+                                 filter_special=filter_special)
 
         elif action == 'Delete':
             detergent_id = int(request.form['detergent_id'])
@@ -849,9 +871,21 @@ def fabric_conditioner():
         user_id = session.get('user_id')
 
         if action == 'Add' or action == 'Update':
-            name = request.form['name']
-            price = float(request.form['price'])
-            quantity = int(request.form['quantity'])
+            name = request.form.get('name', '').strip()
+            price_str = request.form.get('price', '').strip()
+            qty_str = request.form.get('quantity', '').strip()
+
+            if not name or not price_str or not qty_str:
+                flash('Please fill in all required fields (Name, Price, Quantity).', 'error')
+                return redirect(url_for('fabric_conditioner'))
+
+            try:
+                price = float(price_str)
+                quantity = int(qty_str)
+            except ValueError:
+                flash('Price and Quantity must be valid numbers.', 'error')
+                return redirect(url_for('fabric_conditioner'))
+
             image = request.files.get('image')
             filename = None
 
@@ -859,14 +893,25 @@ def fabric_conditioner():
                 filename = secure_filename(image.filename)
                 image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+            # AI Filters
+            filter_cloth_type = request.form.get('filter_cloth_type', '')
+            filter_color = request.form.get('filter_color', '')
+            filter_special = request.form.get('filter_special', '')
+
             if action == 'Add':
-                add_fabric_conditioner(name, price, quantity, filename, user_id=user_id)
+                add_fabric_conditioner(name, price, quantity, filename, user_id=user_id,
+                                       filter_cloth_type=filter_cloth_type, 
+                                       filter_color=filter_color, 
+                                       filter_special=filter_special)
             elif action == 'Update':
                 fabcon_id = int(request.form['fabric_conditioner_id'])
                 if not filename:
                     old = get_fabric_conditioner_by_id(fabcon_id)
                     filename = old['IMAGE_FILENAME'] if old else None
-                update_fabric_conditioner(fabcon_id, name, price, quantity, filename, user_id=user_id)
+                update_fabric_conditioner(fabcon_id, name, price, quantity, filename, user_id=user_id,
+                                          filter_cloth_type=filter_cloth_type, 
+                                          filter_color=filter_color, 
+                                          filter_special=filter_special)
 
         elif action == 'Delete':
             fabcon_id = int(request.form['fabric_conditioner_id'])
@@ -1364,52 +1409,78 @@ def mark_order_as_paid():
 
             # Create receipt lines
             lines = []
-            lines.append("========= LAUNDRY LINK =========\n")
+            
+            # Helper function to format receipt lines with left-aligned text and right-aligned price
+            def format_receipt_line(description, price, width=32):
+                """Format a receipt line with description left-aligned and price right-aligned."""
+                price_str = str(price)
+                available_width = width - len(price_str) - 1
+                description = description[:available_width]
+                line = description + " " * (available_width - len(description)) + price_str
+                return line + "\n"
+            
+            lines.append("================================\n")
+            lines.append("-" * 32 + "\n")
+            lines.append(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+            lines.append("-" * 32 + "\n")
             lines.append(f"Order ID: {order.get('ORDER_ID')}\n")
             lines.append(f"Customer: {customer.get('FULLNAME') if customer else 'N/A'}\n")
             lines.append(f"Phone: {customer.get('PHONE_NUMBER') if customer else 'N/A'}\n")
             lines.append(f"Order Type: {order.get('ORDER_TYPE')}\n")
             lines.append(f"Status: {order.get('ORDER_STATUS')}\n")
             lines.append(f"Payment: {order.get('PAYMENT_STATUS')}\n")
-            lines.append(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
             lines.append("-" * 32 + "\n")
+            
+            # Calculate subtotal
+            subtotal = 0.0
             
             # Load
             if order.get('TOTAL_LOAD'):
-                lines.append(f"Loads: {order.get('TOTAL_LOAD')} x Php{price_per_load:.0f} = Php{order.get('TOTAL_LOAD') * price_per_load:.2f}\n")
+                load_price = order.get('TOTAL_LOAD') * price_per_load
+                lines.append(format_receipt_line(f"Loads: {order.get('TOTAL_LOAD')} x Php{price_per_load:.0f}", f"Php{load_price:.2f}"))
+                subtotal += load_price
             
             # Priority
             if orderitem and orderitem.get('PRIORITIZE_ORDER'):
-                lines.append("Priority: Php50.00\n")
+                lines.append(format_receipt_line("Priority", "Php50.00"))
+                subtotal += 50.0
             
             # Iron
             if orderitem and orderitem.get('IRON'):
-                lines.append("Ironing: Php50.00\n")
+                lines.append(format_receipt_line("Ironing", "Php50.00"))
+                subtotal += 50.0
             
             # Fold
             if orderitem and orderitem.get('FOLD_CLOTHES'):
-                lines.append("Folding: Php70.00\n")
+                lines.append(format_receipt_line("Folding", "Php70.00"))
+                subtotal += 70.0
             
             # Detergents
             if detergents:
                 for det in detergents:
-                    lines.append(f"Detergent: {det['DETERGENT_NAME']}\n")
-                    lines.append(f"  Qty: {det['QUANTITY']} x Php{det['UNIT_PRICE']} = Php{det['total_price']}\n")
+                    det_total = float(det.get('total_price', 0))
+                    lines.append(format_receipt_line(f"Detergent: {det['DETERGENT_NAME']}", f"Php{det_total:.2f}"))
+                    subtotal += det_total
             else:
                 lines.append("Detergent: Own\n")
             
             # Fabcons
             if fabcons:
                 for fab in fabcons:
-                    lines.append(f"FabCon: {fab['FABCON_NAME']}\n")
-                    lines.append(f"  Qty: {fab['QUANTITY']} x Php{fab['UNIT_PRICE']} = Php{fab['total_price']}\n")
+                    fab_total = float(fab.get('total_price', 0))
+                    lines.append(format_receipt_line(f"FabCon: {fab['FABCON_NAME']}", f"Php{fab_total:.2f}"))
+                    subtotal += fab_total
             else:
                 lines.append("FabCon: Own\n")
             
+            # Calculate tax
+            tax = round(subtotal * 0.12, 2)
+            
             lines.append("-" * 32 + "\n")
-            lines.append(f"Total Price: Php{order.get('TOTAL_PRICE'):.2f}\n")
-            lines.append("\nThank you!\n")
-            lines.append("================================\n")
+            lines.append(format_receipt_line("Subtotal:", f"Php{subtotal:.2f}"))
+            lines.append(format_receipt_line("Tax (12%):", f"Php{tax:.2f}"))
+            lines.append(format_receipt_line("Total Price:", f"Php{order.get('TOTAL_PRICE'):.2f}"))
+            lines.append("-" * 32 + "\n")
 
             receipt_text = "".join(lines)
             
@@ -1420,19 +1491,28 @@ def mark_order_as_paid():
                 # Print logo at top middle
                 logo_path = os.path.join(app.static_folder, 'images', 'logo.jpg')
                 if os.path.exists(logo_path):
+                    p.set(align='center')
                     p.image(logo_path)
                     p.text("\n")
+                    p.set(align='left')
                 
                 # Print header with store information
                 p.set(align='center')
                 p.text("LAUNDRYLINK\n")
                 p.text("Sanciangko St, Cebu City, 6000\n")
+                p.text("VAT REG TIN: 123-456-789-000\n")
                 p.text("Phone: 0912-345-6789\n")
                 p.text("est. 2025\n")
                 p.set(align='left')
                 p.text("\n")
                 
                 p.text(receipt_text)
+                
+                # Print centered thank you message
+                p.set(align='center')
+                p.text("Thank You For Using LaundryLink!\n")
+                p.text("Laundry Day, Made Easy.\n")
+                p.set(align='left')
                 
                 # SELF-SERVICE: Only print one receipt without QR code
                 if is_self_service:
@@ -1449,8 +1529,10 @@ def mark_order_as_paid():
                     qr_image = qr_image.convert('RGB')
                     
                     # Print dynamically generated QR code on first receipt
+                    p.set(align='center')
                     p.image(qr_image)
                     p.text("\n")
+                    p.set(align='left')
 
                     # Add separator between receipts
                     p.text("\n" + "=" * 32 + "\n")
@@ -1463,19 +1545,28 @@ def mark_order_as_paid():
                     # SECOND RECEIPT WITHOUT QR CODE
                     # Print logo at top middle
                     if os.path.exists(logo_path):
+                        p.set(align='center')
                         p.image(logo_path)
                         p.text("\n")
+                        p.set(align='left')
                     
                     # Print header with store information
                     p.set(align='center')
                     p.text("LAUNDRYLINK\n")
-                    p.text("Sanciangko St, Cebu City, 6000 Cebu\n")
+                    p.text("Sanciangko St, Cebu City, 6000\n")
+                    p.text("VAT REG TIN: 123-456-789-000\n")
                     p.text("Phone: 0912-345-6789\n")
                     p.text("est. 2025\n")
                     p.set(align='left')
                     p.text("\n")
                     
                     p.text(receipt_text)
+                    
+                    # Print centered thank you message
+                    p.set(align='center')
+                    p.text("Thank You For Using LaundryLink!\n")
+                    p.text("Laundry Day, Made Easy.\n")
+                    p.set(align='left')
                     
                     # Cut the paper after second receipt
                     p.cut()

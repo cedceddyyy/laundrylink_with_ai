@@ -1,15 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/staff_detergent_fabric_inventory.css">
     <link rel="stylesheet" href="../static/css/w3.css">
     <link rel="icon" type="image/x-icon" href="../static/images/favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Fabric Conditioner Inventory Management</title>
-</head>
+    <style>
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            background: #e9ecef;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+    </style>
+
 <body>
     <!-- CONTAINER -->
     <div class="container">
@@ -19,13 +49,13 @@
             <div class="w3-center w3-bar-item logo">
                 <img src="../static/images/logo.jpg" alt="Logo" class="logo" style="width: 90px; height: 100px;">
             </div>
-            
+
             <!-- MAIN TITLE (DASHBOARD)-->
             <div class="w3-margin w3-margin-top main-title">
                 <img src="../static/images/dashboard.png" alt="Dashboard" class="nav-icon">
                 <span>Dashboard</span>
             </div>
-            
+
             <!-- MAIN NAVIGATION PERO SIDEBAR GIHAPON NA SUD HA **BASTA MAO NANA -->
             <nav class="w3-container w3-padding w3-margin-top">
                 <!-- MAIN -->
@@ -41,9 +71,9 @@
                     <li class="w3-padding w3-bar-item w3-button">
                         <a href="{{ url_for('detergent_inventory') }}">
                             <span>Detergent</span>
-                        </a>      
+                        </a>
                     </li>
-                    
+
                     <li class="w3-padding w3-bar-item w3-button active">
                         <a href="{{ url_for('fabric_conditioner') }}">
                             <span>Fabric Conditioner</span>
@@ -78,13 +108,14 @@
                 </ul>
             </nav>
         </aside>
-        
+
         <!-- MAIN -->
         <main>
             <!-- HEADER -->
             <header>
                 <div>
-                    <button class="w3-button w3-xlarge hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <button class="w3-button w3-xlarge hamburger-btn" onclick="toggleSidebar()"><i
+                            class="fas fa-bars"></i></button>
                     <h1 class="page-title">Fabric Conditioner</h1>
                     <div class="breadcrumb">Main / Fabric Conditioner</div>
                 </div>
@@ -148,208 +179,327 @@
                             </div>
                             <div class="alert-content">
                                 <div class="low-stock-items">
-                                    {% for item in fabric_conditioners if item['QTY'] <= 10 %}
-                                    <div class="low-stock-item">
+                                    {% for item in fabric_conditioners if item['QTY'] <= 10 %} <div
+                                        class="low-stock-item">
                                         <div class="item-info">
-                                            <img src="{{ url_for('static', filename='uploads/' ~ item['IMAGE_FILENAME']) if item['IMAGE_FILENAME'] else '../static/images/logo.jpg' }}" alt="{{ item['FABCON_NAME'] }}" class="item-img">
+                                            <img src="{{ url_for('static', filename='uploads/' ~ item['IMAGE_FILENAME']) if item['IMAGE_FILENAME'] else '../static/images/logo.jpg' }}"
+                                                alt="{{ item['FABCON_NAME'] }}" class="item-img">
                                             <div class="item-details">
                                                 <h4>{{ item['FABCON_NAME'] }}</h4>
                                                 <p class="item-id">F{{ '%03d'|format(item['FABCON_ID']) }}</p>
                                             </div>
                                         </div>
                                         <div class="stock-status">
-                                            <span class="quantity-badge {% if item['QTY'] == 0 %}out-of-stock{% elif item['QTY'] <= 5 %}critical{% else %}warning{% endif %}">
+                                            <span
+                                                class="quantity-badge {% if item['QTY'] == 0 %}out-of-stock{% elif item['QTY'] <= 5 %}critical{% else %}warning{% endif %}">
                                                 {{ item['QTY'] }} left
                                             </span>
                                         </div>
-                                    </div>
-                                    {% endfor %}
                                 </div>
+                                {% endfor %}
                             </div>
                         </div>
-                        {% else %}
-                        <div class="no-alert-card">
-                            <div class="no-alert-header">
-                                <h3><i class="fas fa-check-circle"></i> Stock Status</h3>
-                            </div>
-                            <div class="no-alert-content">
-                                <div class="no-alert-icon">
-                                    <i class="fas fa-thumbs-up"></i>
-                                </div>
-                                <h4>All Stock Levels Good!</h4>
-                                <p>No low stock items detected. All products have sufficient quantity.</p>
-                            </div>
-                        </div>
-                        {% endif %}
                     </div>
+                    {% else %}
+                    <div class="no-alert-card">
+                        <div class="no-alert-header">
+                            <h3><i class="fas fa-check-circle"></i> Stock Status</h3>
+                        </div>
+                        <div class="no-alert-content">
+                            <div class="no-alert-icon">
+                                <i class="fas fa-thumbs-up"></i>
+                            </div>
+                            <h4>All Stock Levels Good!</h4>
+                            <p>No low stock items detected. All products have sufficient quantity.</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
-                
-                <!-- ADD ITEM BUTTON AND SEARCH BOX -->
-                <div class="search-row">
-                    <button class="add-item-btn">Add Item</button>
-                    <form method="GET" action="{{ url_for('fabric_conditioner') }}" class="search-container">
-                        <input type="text" class="search-box" name="q" placeholder="Search..." value="{{ request.args.get('q', '') }}">
-                        <button type="submit" class="search-icon">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        {% if request.args.get('q', '') %}
-                        <a href="{{ url_for('fabric_conditioner') }}" class="clear-search-btn" title="Clear search">
-                            <i class="fas fa-times-circle"></i>
-                        </a>
-                        {% endif %}
-                    </form>
-                </div>
+            </div>
 
-                <div class="table-container">
-                    <table class="inventory-table">
-                        <thead>
-                            <tr>
-                                <th>Product ID</th>
-                                <th>Image</th>
-                                <th>Product Name</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Total Value</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                       <tbody>
-                            {% for item in fabric_conditioners %}
-                            <tr>
-                                <td>F{{ '%03d'|format(item['FABCON_ID']) }}</td>
-                                <td><img src="{{ url_for('static', filename='uploads/' ~ item['IMAGE_FILENAME']) if item['IMAGE_FILENAME'] else '../static/images/logo.jpg' }}" alt="{{ item['FABCON_NAME'] }}" class="product-img"></td>
-                                <td>{{ item['FABCON_NAME'] }}</td>
-                                <td>₱{{ '%.2f'|format(item['FABCON_PRICE']) }}</td>
-                                <td>{{ item['QTY'] }}</td>
-                                <td>₱{{ '%.2f'|format(item['FABCON_PRICE'] * item['QTY']) }}</td>
-                                <td>
-                                    <button class="action-btn edit-btn"
-                                        data-id="{{ item['FABCON_ID'] }}"
-                                        data-name="{{ item['FABCON_NAME'] }}"
-                                        data-price="{{ item['FABCON_PRICE'] }}"
-                                        data-qty="{{ item['QTY'] }}"
-                                        data-image="{{ url_for('static', filename='uploads/' ~ item['IMAGE_FILENAME']) if item['IMAGE_FILENAME'] else '../static/images/logo.jpg' }}">
-                                        <i class="fas fa-edit"></i>
+            <!-- ADD ITEM BUTTON AND SEARCH BOX -->
+            <div class="search-row">
+                <button class="add-item-btn">Add Item</button>
+                <form method="GET" action="{{ url_for('fabric_conditioner') }}" class="search-container">
+                    <input type="text" class="search-box" name="q" placeholder="Search..."
+                        value="{{ request.args.get('q', '') }}">
+                    <button type="submit" class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    {% if request.args.get('q', '') %}
+                    <a href="{{ url_for('fabric_conditioner') }}" class="clear-search-btn" title="Clear search">
+                        <i class="fas fa-times-circle"></i>
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Image</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in fabric_conditioners %}
+                        <tr>
+                            <td>F{{ '%03d'|format(item['FABCON_ID']) }}</td>
+                            <td><img src="{{ url_for('static', filename='uploads/' ~ item['IMAGE_FILENAME']) if item['IMAGE_FILENAME'] else '../static/images/logo.jpg' }}"
+                                    alt="{{ item['FABCON_NAME'] }}" class="product-img"></td>
+                            <td>{{ item['FABCON_NAME'] }}</td>
+                            <td>₱{{ '%.2f'|format(item['FABCON_PRICE']) }}</td>
+                            <td>{{ item['QTY'] }}</td>
+                            <td>₱{{ '%.2f'|format(item['FABCON_PRICE'] * item['QTY']) }}</td>
+                            <td>
+                                <button class="action-btn edit-btn" data-id="{{ item['FABCON_ID'] }}"
+                                    data-name="{{ item['FABCON_NAME'] }}" data-price="{{ item['FABCON_PRICE'] }}"
+                                    data-qty="{{ item['QTY'] }}"
+                                    data-image="{{ url_for('static', filename='uploads/' ~ item['IMAGE_FILENAME']) if item['IMAGE_FILENAME'] else '../static/images/logo.jpg' }}"
+                                    data-filter-cloth-type="{{ item['FILTER_CLOTH_TYPE'] or '' }}"
+                                    data-filter-color="{{ item['FILTER_COLOR'] or '' }}"
+                                    data-filter-special="{{ item['FILTER_SPECIAL'] or '' }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="POST" action="{{ url_for('fabric_conditioner') }}"
+                                    style="display:inline;">
+                                    <input type="hidden" name="fabric_conditioner_id" value="{{ item['FABCON_ID'] }}">
+                                    <input type="hidden" name="action" value="Delete">
+                                    <button type="submit" class="action-btn"
+                                        onclick="return confirm('Are you sure you want to delete this item?');">
+                                        <i class="fas fa-trash"></i>
                                     </button>
-                                    <form method="POST" action="{{ url_for('fabric_conditioner') }}" style="display:inline;">
-                                        <input type="hidden" name="fabric_conditioner_id" value="{{ item['FABCON_ID'] }}">
-                                        <input type="hidden" name="action" value="Delete">
-                                        <button type="submit" class="action-btn" onclick="return confirm('Are you sure you want to delete this item?');">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <div class="pagination">
-                        {% if total_pages > 1 %}
-                        <a href="{{ url_for('fabric_conditioner', page=1, q=request.args.get('q', '')) }}" 
-                           class="pagination-btn {% if current_page == 1 %}disabled{% endif %}">
-                            <i class="fas fa-angle-double-left"></i>
-                        </a>
-                        <a href="{{ url_for('fabric_conditioner', page=current_page-1, q=request.args.get('q', '')) }}" 
-                           class="pagination-btn {% if current_page == 1 %}disabled{% endif %}">
-                            <i class="fas fa-angle-left"></i>
-                        </a>
-                        
-                        {% set start = [current_page - 2, 1] | max %}
-                        {% set end = [start + 4, total_pages + 1] | min %}
-                        {% set start = [end - 5, 1] | max %}
-                        
-                        {% for p in range(start, end) %}
-                        <a href="{{ url_for('fabric_conditioner', page=p, q=request.args.get('q', '')) }}"
-                           class="page-number {% if p == current_page %}active{% endif %}">
-                            {{ p }}
-                        </a>
+                                </form>
+                            </td>
+                        </tr>
                         {% endfor %}
-                        
-                        <a href="{{ url_for('fabric_conditioner', page=current_page+1, q=request.args.get('q', '')) }}"
-                           class="pagination-btn {% if current_page == total_pages %}disabled{% endif %}">
-                            <i class="fas fa-angle-right"></i>
-                        </a>
-                        <a href="{{ url_for('fabric_conditioner', page=total_pages, q=request.args.get('q', '')) }}"
-                           class="pagination-btn {% if current_page == total_pages %}disabled{% endif %}">
-                            <i class="fas fa-angle-double-right"></i>
-                        </a>
-                        {% endif %}
-                    </div>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    {% if total_pages > 1 %}
+                    <a href="{{ url_for('fabric_conditioner', page=1, q=request.args.get('q', '')) }}"
+                        class="pagination-btn {% if current_page == 1 %}disabled{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="{{ url_for('fabric_conditioner', page=current_page-1, q=request.args.get('q', '')) }}"
+                        class="pagination-btn {% if current_page == 1 %}disabled{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+
+                    {% set start = [current_page - 2, 1] | max %}
+                    {% set end = [start + 4, total_pages + 1] | min %}
+                    {% set start = [end - 5, 1] | max %}
+
+                    {% for p in range(start, end) %}
+                    <a href="{{ url_for('fabric_conditioner', page=p, q=request.args.get('q', '')) }}"
+                        class="page-number {% if p == current_page %}active{% endif %}">
+                        {{ p }}
+                    </a>
+                    {% endfor %}
+
+                    <a href="{{ url_for('fabric_conditioner', page=current_page+1, q=request.args.get('q', '')) }}"
+                        class="pagination-btn {% if current_page == total_pages %}disabled{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="{{ url_for('fabric_conditioner', page=total_pages, q=request.args.get('q', '')) }}"
+                        class="pagination-btn {% if current_page == total_pages %}disabled{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
-        </main>
-        
-        <!-- ADD ITEM MODAL -->
-        <div id="addItemModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal('addItemModal')">&times;</span>
-                <h2>Add Item</h2>
-                <form action="{{ url_for('fabric_conditioner') }}" method="POST" enctype="multipart/form-data">
-                    <div class="modal-img-upload">
-                        <label for="addImageInput" class="img-label">
-                            <img id="addImgPreview" src="../static/images/logo.jpg" alt="Preview" class="modal-img-preview">
-                            <span>Upload Image</span>
-                        </label>
-                        <input type="file" name="image" id="addImageInput" accept="image/*" style="display:none" onchange="previewImage(event, 'addImgPreview')">
-                    </div>
-                    <div class="modal-form-group">
-                        <label>Product Name</label>
-                        <input type="text" name="name" placeholder="Enter product name">
-                    </div>
-                    <div class="modal-form-group">
-                        <label>Price</label>
-                        <input type="number" name="price" placeholder="Enter price">
-                    </div>
-                    <div class="modal-form-group">
-                        <label>Quantity</label>
-                        <input type="number" name="quantity" placeholder="Enter quantity">
-                    </div>
-                    <button type="submit" class="modal-save-btn">Save</button>
-                </form>
-            </div>
-        </div>
+    </div>
+    </main>
 
-        <!-- EDIT ITEM MODAL -->
-        <div id="editItemModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal('editItemModal')">&times;</span>
-                <h2>Edit Item</h2>
-                <form id="editForm" action="{{ url_for('fabric_conditioner') }}" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="fabric_conditioner_id" id="editFabricConditionerId">
-                    <input type="hidden" name="action" value="Update">
-                    <div class="modal-img-upload">
-                        <label for="editImageInput" class="img-label">
-                            <img id="editImgPreview" src="../static/images/logo.jpg" alt="Preview" class="modal-img-preview">
-                            <span>Update Image</span>
-                        </label>
-                        <input type="file" name="image" id="editImageInput" accept="image/*" style="display:none" onchange="previewImage(event, 'editImgPreview')">
-                    </div>
+    <!-- ADD ITEM MODAL -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addItemModal')">&times;</span>
+            <h2>Add Item</h2>
+            <form action="{{ url_for('fabric_conditioner') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-img-upload">
+                    <label for="addImageInput" class="img-label">
+                        <img id="addImgPreview" src="../static/images/logo.jpg" alt="Preview" class="modal-img-preview">
+                        <span>Upload Image</span>
+                    </label>
+                    <input type="file" name="image" id="addImageInput" accept="image/*" style="display:none"
+                        onchange="previewImage(event, 'addImgPreview')">
+                </div>
+                <div class="modal-form-group">
+                    <label>Product Name</label>
+                    <input type="text" name="name" placeholder="Enter product name">
+                </div>
+                <div class="modal-form-group">
+                    <label>Price</label>
+                    <input type="number" name="price" placeholder="Enter price">
+                </div>
+                <div class="modal-form-group">
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" placeholder="Enter quantity">
+                </div>
+                <!-- AI FILTERS -->
+                <div style="border-top:1px solid #eee; margin:10px 0; padding-top:10px;">
+                    <h4>AI Recommendation Tags</h4>
+
+                    <!-- Cloth Type -->
                     <div class="modal-form-group">
-                        <label>Product Name</label>
-                        <input type="text" name="name" id="editName" placeholder="Enter product name">
+                        <label>Cloth Type</label>
+                        <input type="hidden" name="filter_cloth_type" id="addFilterClothType">
+                        <div class="checkbox-group" id="addClothTypeGroup">
+                            <label><input type="checkbox" value="Delicate"> Delicate</label>
+                            <label><input type="checkbox" value="Regular"> Regular</label>
+                            <label><input type="checkbox" value="Heavy"> Heavy</label>
+                        </div>
                     </div>
+
+                    <!-- Color -->
                     <div class="modal-form-group">
-                        <label>Price</label>
-                        <input type="number" name="price" id="editPrice" placeholder="Enter price">
+                        <label>Color</label>
+                        <input type="hidden" name="filter_color" id="addFilterColor">
+                        <div class="checkbox-group" id="addColorGroup">
+                            <label><input type="checkbox" value="White"> White</label>
+                            <label><input type="checkbox" value="Colored"> Colored</label>
+                            <label><input type="checkbox" value="Mixed"> Mixed</label>
+                        </div>
                     </div>
+
+                    <!-- Special -->
                     <div class="modal-form-group">
-                        <label>Quantity</label>
-                        <input type="number" name="quantity" id="editQty" placeholder="Enter quantity">
+                        <label>Special</label>
+                        <input type="hidden" name="filter_special" id="addFilterSpecial">
+                        <div class="checkbox-group" id="addSpecialGroup">
+                            <label><input type="checkbox" value="Sensitive Skin"> Sensitive Skin</label>
+                            <label><input type="checkbox" value="Strong Odor"> Strong Odor</label>
+                            <label><input type="checkbox" value="Stained"> Stained</label>
+                            <label><input type="checkbox" value="None"> None</label>
+                        </div>
                     </div>
-                    <button type="submit" class="modal-save-btn">Update</button>
-                </form>
-            </div>
+                </div>
+                <button type="submit" class="modal-save-btn">Save</button>
+            </form>
         </div>
+    </div>
+
+    <!-- EDIT ITEM MODAL -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editItemModal')">&times;</span>
+            <h2>Edit Item</h2>
+            <form id="editForm" action="{{ url_for('fabric_conditioner') }}" method="POST"
+                enctype="multipart/form-data">
+                <input type="hidden" name="fabric_conditioner_id" id="editFabricConditionerId">
+                <input type="hidden" name="action" value="Update">
+                <div class="modal-img-upload">
+                    <label for="editImageInput" class="img-label">
+                        <img id="editImgPreview" src="../static/images/logo.jpg" alt="Preview"
+                            class="modal-img-preview">
+                        <span>Update Image</span>
+                    </label>
+                    <input type="file" name="image" id="editImageInput" accept="image/*" style="display:none"
+                        onchange="previewImage(event, 'editImgPreview')">
+                </div>
+                <div class="modal-form-group">
+                    <label>Product Name</label>
+                    <input type="text" name="name" id="editName" placeholder="Enter product name">
+                </div>
+                <div class="modal-form-group">
+                    <label>Price</label>
+                    <input type="number" name="price" id="editPrice" placeholder="Enter price">
+                </div>
+                <div class="modal-form-group">
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" id="editQty" placeholder="Enter quantity">
+                </div>
+                <!-- AI FILTERS -->
+                <div style="border-top:1px solid #eee; margin:10px 0; padding-top:10px;">
+                    <h4>AI Recommendation Tags</h4>
+
+                    <!-- Cloth Type -->
+                    <div class="modal-form-group">
+                        <label>Cloth Type</label>
+                        <input type="hidden" name="filter_cloth_type" id="editFilterClothType">
+                        <div class="checkbox-group" id="editClothTypeGroup">
+                            <label><input type="checkbox" value="Delicate"> Delicate</label>
+                            <label><input type="checkbox" value="Regular"> Regular</label>
+                            <label><input type="checkbox" value="Heavy"> Heavy</label>
+                        </div>
+                    </div>
+
+                    <!-- Color -->
+                    <div class="modal-form-group">
+                        <label>Color</label>
+                        <input type="hidden" name="filter_color" id="editFilterColor">
+                        <div class="checkbox-group" id="editColorGroup">
+                            <label><input type="checkbox" value="White"> White</label>
+                            <label><input type="checkbox" value="Colored"> Colored</label>
+                            <label><input type="checkbox" value="Mixed"> Mixed</label>
+                        </div>
+                    </div>
+
+                    <!-- Special -->
+                    <div class="modal-form-group">
+                        <label>Special</label>
+                        <input type="hidden" name="filter_special" id="editFilterSpecial">
+                        <div class="checkbox-group" id="editSpecialGroup">
+                            <label><input type="checkbox" value="Sensitive Skin"> Sensitive Skin</label>
+                            <label><input type="checkbox" value="Strong Odor"> Strong Odor</label>
+                            <label><input type="checkbox" value="Stained"> Stained</label>
+                            <label><input type="checkbox" value="None"> None</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="modal-save-btn">Update</button>
+            </form>
+        </div>
+    </div>
     </div>
     <!-- MODAL & BUTTON SCRIPTS -->
     <script>
         // Open Add Item Modal
-        document.querySelector('.add-item-btn').onclick = function() {
+        document.querySelector('.add-item-btn').onclick = function () {
             document.getElementById('addItemModal').style.display = 'block';
         };
+
+        // Toggle Checkboxes from Hidden Input (for Edit)
+        function setCheckboxes(groupId, valueStr) {
+            const group = document.getElementById(groupId);
+            const values = (valueStr || '').split(',').map(s => s.trim());
+            group.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = values.includes(cb.value);
+            });
+        }
+
+        // Update Hidden Input from Checkboxes (on Change)
+        function setupCheckboxListeners(groupId, hiddenInputId) {
+            const group = document.getElementById(groupId);
+            const hidden = document.getElementById(hiddenInputId);
+            group.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const checked = Array.from(group.querySelectorAll('input[type="checkbox"]:checked'))
+                        .map(c => c.value);
+                    hidden.value = checked.join(', ');
+                });
+            });
+        }
+
+        // Initialize Listeners
+        setupCheckboxListeners('addClothTypeGroup', 'addFilterClothType');
+        setupCheckboxListeners('addColorGroup', 'addFilterColor');
+        setupCheckboxListeners('addSpecialGroup', 'addFilterSpecial');
+
+        setupCheckboxListeners('editClothTypeGroup', 'editFilterClothType');
+        setupCheckboxListeners('editColorGroup', 'editFilterColor');
+        setupCheckboxListeners('editSpecialGroup', 'editFilterSpecial');
+
         // Open Edit Item Modal for all edit buttons
         document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.onclick = function(e) {
+            btn.onclick = function (e) {
                 e.preventDefault();
                 document.getElementById('editItemModal').style.display = 'block';
                 document.getElementById('editFabricConditionerId').value = btn.getAttribute('data-id');
@@ -357,6 +507,20 @@
                 document.getElementById('editPrice').value = btn.getAttribute('data-price');
                 document.getElementById('editQty').value = btn.getAttribute('data-qty');
                 document.getElementById('editImgPreview').src = btn.getAttribute('data-image');
+
+                // Populate Hidden Inputs (keep them for form submission)
+                const cType = btn.getAttribute('data-filter-cloth-type');
+                const cColor = btn.getAttribute('data-filter-color');
+                const cSpecial = btn.getAttribute('data-filter-special');
+
+                document.getElementById('editFilterClothType').value = cType;
+                document.getElementById('editFilterColor').value = cColor;
+                document.getElementById('editFilterSpecial').value = cSpecial;
+
+                // Sync Checkboxes
+                setCheckboxes('editClothTypeGroup', cType);
+                setCheckboxes('editColorGroup', cColor);
+                setCheckboxes('editSpecialGroup', cSpecial);
             };
         });
         // Close modal
@@ -364,7 +528,7 @@
             document.getElementById(id).style.display = 'none';
         }
         // Close modal when clicking outside
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             document.querySelectorAll('.modal').forEach(modal => {
                 if (event.target == modal) modal.style.display = "none";
             });
@@ -372,11 +536,12 @@
         // Image preview
         function previewImage(event, imgId) {
             const reader = new FileReader();
-            reader.onload = function(){
+            reader.onload = function () {
                 document.getElementById(imgId).src = reader.result;
             };
             reader.readAsDataURL(event.target.files[0]);
         }
     </script>
 </body>
+
 </html>
